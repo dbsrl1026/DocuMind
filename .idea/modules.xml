@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/DocuMind.iml" filepath="$PROJECT_DIR$/.idea/DocuMind.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/GloudStorage.iml" filepath="$PROJECT_DIR$/.idea/GloudStorage.iml" />
     </modules>
   </component>
 </project>

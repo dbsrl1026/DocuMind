@@ -1,4 +1,4 @@
-package com.documind.auth;
+package com.gloud.auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
