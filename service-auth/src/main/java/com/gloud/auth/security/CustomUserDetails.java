@@ -7,18 +7,16 @@ import java.util.Collection;
 import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
-    private final Long userId;
+    private final Long memberId;
     private final String email;
-    private final String username;
     private final String password;
     private final List<GrantedAuthority> authorities;
 
     //private MemberDTO memberDTO;                                                  //---------------------- 추가
 
-    public CustomUserDetails(Long userId, String email, String username, String password, List<GrantedAuthority> authorities) {
-        this.userId = userId;
+    public CustomUserDetails(Long memberId, String email, String password, List<GrantedAuthority> authorities) {
+        this.memberId = memberId;
         this.email = email;
-        this.username = username;
         this.password = password;
         this.authorities = authorities;
                                     //---------------------- 추가
@@ -30,9 +28,6 @@ public class CustomUserDetails implements UserDetails {
         return authorities;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
 
     @Override
     public String getPassword() {
@@ -41,11 +36,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
         return email;
+    }
+    public Long getMemberId() {
+        return memberId;
     }
 
     @Override
@@ -67,4 +61,6 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 }
