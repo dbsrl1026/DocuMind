@@ -4,15 +4,19 @@ package com.gloud.auth.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 @Entity
 @Table(name = "tb_oauth")
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(of = "oauthId")
-public class Oauth {
+public class OauthToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +24,10 @@ public class Oauth {
     private Long oauthId;
 
     @Column(name="access_token", length=500)
-    String accessToken;
+    private String accessToken;
 
     @Column(name="refresh_token", length=500)
-    String refreshToken;
+    private String refreshToken;
 
     @ToString.Exclude
     @OneToOne(optional = false)

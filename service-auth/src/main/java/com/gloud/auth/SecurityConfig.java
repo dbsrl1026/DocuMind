@@ -5,11 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gloud.auth.repository.RedisTokenRepository;
 import com.gloud.auth.security.CustomLogoutHandler;
 import com.gloud.auth.security.JwtFilter;
+import com.gloud.auth.security.OAuth2SuccessHandler;
+import com.gloud.auth.service.CustomOAuth2UserService;
 import com.gloud.auth.util.JwtUtil;
 import com.gloud.auth.security.LoginFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,13 +41,15 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final CustomLogoutHandler customLogoutHandler;
-    private final AuthenticationConfiguration authenticationConfiguration;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oauth2SuccessHandler;
 
+    private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
     private final RedisTokenRepository redisTokenRepository;
     private final ObjectMapper objectMapper;
 
-//    @Value("${spring.cors.path}")
+    //    @Value("${spring.cors.path}")
     private List<String> corsPath;
 
 
@@ -57,9 +60,9 @@ public class SecurityConfig {
     }
 
 
-
-    private static final String[] AUTH_WHITELIST = {
-            "/", "/auth/register", "/auth/login", "/auth/refresh", "/auth/logout"
+    private static final String[] AUTH_BLACKLIST = {
+            "/auth/validate"
+            //"login/**"
     };
 
     @Bean
@@ -113,8 +116,14 @@ public class SecurityConfig {
                 )
                 // 접근 권한 설정
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .requestMatchers(AUTH_BLACKLIST).permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(auth -> auth.baseUri("/oauth2/authorization")) // 기본값
+                        .redirectionEndpoint(redir -> redir.baseUri("/login/oauth2/code/*")) // 기본값
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(oauth2SuccessHandler)
                 )
 
 
@@ -132,6 +141,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
     private CorsConfigurationSource corsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
 

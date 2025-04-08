@@ -24,13 +24,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -39,11 +44,17 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService customUserDetailsService;
     private final RedisTokenRepository redisTokenRepository; // Redis에서 토큰 확인할 Repository
 
+    private static final List<RequestMatcher> excludedPaths = List.of(
+            new AntPathRequestMatcher("/auth/validate")
+//            new AntPathRequestMatcher("/login/**"), ...
+    );
+
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String[] excludePath = { "/", "/auth/register", "/auth/login", "/auth/refresh"};
-        String path = request.getRequestURI();
-        return Arrays.stream(excludePath).anyMatch(path::equals);
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        boolean match = excludedPaths.stream().noneMatch(matcher -> matcher.matches(request));
+        System.out.println("JWT Filter Bypass: " + request.getRequestURI() + " => " + match);
+        return match;
+//        return excludedPaths.stream().anyMatch(matcher -> matcher.matches(request));
     }
 
     @Override

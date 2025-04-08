@@ -4,6 +4,7 @@ package com.gloud.auth.service;
 import com.gloud.auth.dto.MemberDto;
 import com.gloud.auth.dto.TokenDto;
 import com.gloud.auth.entity.Member;
+import com.gloud.auth.exception.UserAlreadyExistsException;
 import com.gloud.auth.repository.MemberRepository;
 import com.gloud.auth.repository.RedisTokenRepository;
 import com.gloud.auth.util.JwtUtil;
@@ -31,6 +32,10 @@ public class AuthServiceImpl implements AuthService {
     public void Register(MemberDto memberDto) {
 
         String encodePassword = passwordEncoder.encode(memberDto.getPassword());
+
+        if(memberRepository.existsByEmail(memberDto.getEmail())) {
+            throw new UserAlreadyExistsException("User already exists");
+        }
 
         Member member = Member.builder()
                 .email(memberDto.getEmail())
@@ -64,8 +69,6 @@ public class AuthServiceImpl implements AuthService {
 
         //  JWT 유효성 검증
         jwtUtil.validateToken(token);
-
-
 
         Long memberId = jwtUtil.getmemberId(token);
         String role = jwtUtil.getRole(token);

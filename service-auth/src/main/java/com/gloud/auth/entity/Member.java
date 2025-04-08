@@ -12,6 +12,7 @@ import java.time.ZoneId;
 @Entity
 @Table(name = "tb_member")
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,9 +30,10 @@ public class Member {
     @Column(name= "username", length = 32, nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
 
+    // USER ,ADMIN 으로 저장 -> Security에서  .hasRole("USER") 을 사용해야함 .hasAuthority() 사용 X
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 16, nullable = false)
     private Role role;
@@ -45,7 +47,7 @@ public class Member {
     private Provider provider;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Oauth oauth;
+    private OauthToken oauthToken;
 
     @PrePersist
     protected void onCreate() {
