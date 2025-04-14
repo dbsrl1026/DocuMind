@@ -1,6 +1,7 @@
 HELP.md
 .gradle
 .properties
+**/libs
 **/.gradle
 **/app
 **/build/

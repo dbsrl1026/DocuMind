@@ -39,8 +39,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String accessToken = userRequest.getAccessToken().getTokenValue();
         //provider이름
         String registrationId = userRequest.getClientRegistration().getRegistrationId(); //google
-        //nameAttributeKey 이름
-//        String nameAttributeKey = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName(); // "sub", "id" 등
+
         //refresh-token
         String refreshToken = userRequest.getAdditionalParameters().get("refresh-token") != null
                 ? userRequest.getAdditionalParameters().get("refresh-token").toString() : "";
