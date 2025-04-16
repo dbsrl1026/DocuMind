@@ -136,10 +136,12 @@ public class TextExtractionUtil {
 
     public static String normalizeText(String raw) {
         return raw
-                .replaceAll("\\t+", " ")
-                .replaceAll(" {2,}", " ")
-                .replaceAll("\\n{2,}", "\n")
-                .replaceAll("[^-\\p{L}\\p{N}\\s.,?!]", "")  // ✅ 하이픈 앞에 배치
+                .replaceAll("\\r\\n", "\n")                 // CRLF → LF
+                .replaceAll("\\t+", "    ")                 // 탭 → 4공백 (AI가 인식 잘함)
+                .replaceAll(" {2,}", " ")                   // 다중 공백 제거
+                .replaceAll("\\n{3,}", "\n\n")              // 3줄 이상 → 문단 구분 유지
+                .replaceAll("[<>\\[\\]{}]", "")             // 구조에 혼란 주는 특수문자 제거
+                .replaceAll("(?m)^\\s*-\\s*", "• ")          // 리스트 기호 통일
                 .trim();
     }
 }

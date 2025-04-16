@@ -17,5 +17,5 @@ public class DocumentKafkaMessage {
     private String originalFilename;
     private String contentType;
     private String textContent;
-    private LocalDateTime uploadTime;
+    private String uploadTime;
 }

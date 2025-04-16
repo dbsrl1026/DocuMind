@@ -37,6 +37,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -117,13 +118,14 @@ public class DocumentServiceImpl implements DocumentService {
 
             try (InputStream extractIs = file.getInputStream()) {
                 String text = TextExtractionUtil.extractText(contentType, extractIs);
+                DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
                 DocumentKafkaMessage message = DocumentKafkaMessage.builder()
                         .metadataId(metadata.getMetadataId())
                         .email(email)
                         .originalFilename(file.getOriginalFilename())
                         .contentType(contentType.name())
                         .textContent(text)
-                        .uploadTime(metadata.getUploadTime())
+                        .uploadTime(metadata.getUploadTime().format(formatter))
                         .build();
                 documentKafkaProducer.publish(message);
             } catch (Exception e) {
@@ -186,7 +188,6 @@ public class DocumentServiceImpl implements DocumentService {
         }
         return uploaded;
     }
-
 
 
     @Override
@@ -405,5 +406,49 @@ public class DocumentServiceImpl implements DocumentService {
         metadata.setProcessingStatus(status);
         metadataRepository.save(metadata);
         log.info("Metadata ID {} updated to status: {}", metadataId, status);
+    }
+
+    @Override
+    public ResponseEntity<String> retryVectorDB(Long metadataId, String email) {
+        Metadata metadata = getMetadata(metadataId);
+        if (metadata == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Metadata not found.");
+        }
+
+        if (!metadata.getUploaderEmail().equals(email)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized access");
+        }
+
+        if (metadata.getProcessingStatus() != ProcessingStatus.FAILED) {
+            return ResponseEntity.badRequest().body("Document is not in FAILED state.");
+        }
+
+        try (InputStream is = minioClient.getObject(GetObjectArgs.builder()
+                .bucket(properties.getBucket())
+                .object(metadata.getFilePath())
+                .build())) {
+
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            String text = TextExtractionUtil.extractText(metadata.getContentType(), is);
+            DocumentKafkaMessage message = DocumentKafkaMessage.builder()
+                    .metadataId(metadata.getMetadataId())
+                    .email(metadata.getUploaderEmail())
+                    .originalFilename(metadata.getOriginalFilename())
+                    .contentType(metadata.getContentType().name())
+                    .textContent(text)
+                    .uploadTime(metadata.getUploadTime().format(formatter))
+                    .build();
+
+            documentKafkaProducer.publish(message);
+            updateProcessingStatus(metadataId, ProcessingStatus.PROCESSING);
+            return ResponseEntity.ok("Retry successful.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Retry failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Metadata getMetadata(Long metadataId) {
+        return metadataRepository.findById(metadataId).orElse(null);
     }
 }

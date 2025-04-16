@@ -123,4 +123,10 @@ public class DocumentController {
         return ResponseEntity.ok(result);
     }
 
+    @ValidateEmailClaim
+    @PostMapping("/retry-vector-db")
+    public ResponseEntity<String> retryVectorDB(@RequestParam Long metadataId, @RequestParam String email) {
+        return documentService.retryVectorDB(metadataId, email);
+    }
+
 }

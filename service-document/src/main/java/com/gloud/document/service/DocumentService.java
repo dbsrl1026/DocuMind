@@ -5,6 +5,7 @@ import com.gloud.document.dto.DeleteResultDto;
 import com.gloud.document.dto.DocumentDetailDto;
 import com.gloud.document.dto.MetadataDto;
 import com.gloud.document.dto.UploadResult;
+import com.gloud.document.entity.Metadata;
 import com.gloud.document.enums.ProcessingStatus;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -35,4 +36,8 @@ public interface DocumentService {
     ResponseEntity<Resource> downloadFile(Long metadataId, String email);
 
     void updateProcessingStatus(Long metadataId, ProcessingStatus status);
+
+    Metadata getMetadata(Long metadataId);
+
+    ResponseEntity<String> retryVectorDB(Long metadataId, String email);
 }
